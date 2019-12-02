@@ -38,10 +38,20 @@ def lutime(f, times):
     # target of a link.
     if os.utime in os.supports_follow_symlinks:
         # ...utime is well behaved
-        os.utime(f, times, follow_symlinks=False)
+        try:
+            os.utime(f, times, follow_symlinks=False)
+        except PermissionError as e:
+            logger.warning(
+                "Unable to set utime on {f} due to {e}".format(f=f, e=e)
+            )
     elif not os.path.islink(f):
         # ...symlinks not an issue here
-        os.utime(f, times)
+        try:
+            os.utime(f, times)
+        except PermissionError as e:
+            logger.warning(
+                "Unable to set utime on file {f} due to {e}".format(f=f, e=e)
+            )
     else:
         try:
             # try the system command
